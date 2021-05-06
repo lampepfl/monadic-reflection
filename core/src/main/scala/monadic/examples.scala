@@ -1,10 +1,69 @@
 package monadic
 package examples
 
+import scala.annotation.tailrec
+
 /**
- * This is a simple example illustrating one potential idiomatic use of 
+ * This example illustrates how exceptions can be implemented by
+ * reflecting the Either-monad.
+ *
+ * We also implement helper
+ * - function `raise`, which uses reflect on `Left` to encode raising an exception and
+ * - function `handle` which temporarily reifies the computation to match on it
+ */
+object Exceptions extends App {
+
+  type Exc[A] = Either[Exception, A]
+
+  type Error[A] = CanReflect[Exc] ?=> A
+
+  object Error extends Monadic[Exc] {
+    def pure[A](a: A) = Right(a)
+
+    @tailrec
+    def sequence[X, R](init: Exc[X])(f: X => Either[Exc[X], Exc[R]]): Exc[R] =
+      init match {
+        case Left(exc) => Left(exc)
+        case Right(x) => f(x) match {
+          case Left(mx) => sequence(mx)(f)
+          case Right(res) => res
+        }
+      }
+
+    def raise[R](e: Exception): Error[R] = reflect(Left(e))
+
+    def handle[R](prog: Error[R])(handler: PartialFunction[Exception, R]): Error[R] = {
+      reify { prog } match {
+         case Left(err) if handler isDefinedAt err => handler(err)
+         case m => reflect(m)
+      }
+    }
+  }
+
+  class ExcA extends Exception
+  class ExcB extends Exception
+
+  val res = Error.reify {
+    Error.handle {
+      Error.handle {
+        println("before")
+        Error.raise(new ExcB)
+        println("after")
+      }{
+        case e: ExcA => println("caught exception A")
+      }
+    }{
+      case e: ExcB => println("caught exception B")
+    }
+  }
+
+  println(s"Result is ${res}")
+}
+
+/**
+ * This is a simple example illustrating one potential idiomatic use of
  * our monadic reflection library.
- * 
+ *
  * It assumes a slight paradigm shift in that we have an implementation monad (here Thunk)
  * that is typically not user visible. In contrast, the type IO[A] now is NOT a monad
  * anymore, but a context function that allows us to use thunked expressions in direct style.
@@ -45,8 +104,8 @@ object SimpleIO extends App {
 
 /**
  * This is a simple example implementation of IO using Future from the
- * Scala standard library. 
- * 
+ * Scala standard library.
+ *
  * In the implementation of method IO.first we can see how to selectively
  * reify to compose futures in a non-sequential manner.
  */
@@ -64,7 +123,7 @@ object FutureIO extends App {
 
     // Note that for simplicity this is NOT a tail recursive implementation and will stack overflow!
     def sequence[X, R](init: Future[X])(f: X => Either[Future[X], Future[R]]): Future[R] =
-      init.flatMap(x => f(x) match { 
+      init.flatMap(x => f(x) match {
         case Left(y) => sequence(y)(f)
         case Right(res) => res
       })
@@ -72,7 +131,7 @@ object FutureIO extends App {
     def run[R](d: Duration)(prog: IO[R]): R = Await.result(reify { prog }, d)
 
     /**
-      * Runs both computations in parallel and returns the value of the first 
+      * Runs both computations in parallel and returns the value of the first
       * completion. It does not abort the other computation, though.
       */
     def first[T](f: IO[T], g: IO[T]): IO[T] = {

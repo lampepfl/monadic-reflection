@@ -6,14 +6,14 @@ trait Monadic[M[_]] {
    * Embedding of pure values into the monad M
    */
   def pure[A](a: A): M[A]
-  
+
   /**
    * Sequencing of monadic values
-   * 
+   *
    * Implementations are required to implement sequencing in a stack-safe
    * way, that is they either need to implement trampolining on their own
    * or implement `sequence` as a tail recursive function.
-   * 
+   *
    * Actually the type X can be different for every call to f...
    * It is a type aligned sequence, but for simplicity we do not enforce this
    * here.
