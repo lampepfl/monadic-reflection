@@ -21,9 +21,9 @@ trait Monadic[M[_]] {
   def sequence[X, R](init: M[X])(f: X => Either[M[X], M[R]]): M[R]
 
   /**
-    * An alias for reify
-    */
-  def apply[R](prog: CanReflect[M] ?=> R): M[R] = reify(prog)
+   * Helper to summon and use an instance of CanReflect[M]
+   */
+  def reflect[R](mr: M[R])(using r: CanReflect[M]): R = r.reflect(mr)
 
   /**
    * Reify a computation into a monadic value
