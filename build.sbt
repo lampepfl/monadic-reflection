@@ -27,6 +27,17 @@ lazy val cats = project
     )
   )
 
+lazy val zio = project
+  .in(file("zio"))
+  .dependsOn(core)
+  .settings(commonSettings)
+  .settings(
+    libraryDependencies ++= Seq(
+      ("dev.zio" % "zio" % "1.0.7").cross(CrossVersion.for3Use2_13),
+      ("dev.zio" %% "zio-streams" % "1.0.7").cross(CrossVersion.for3Use2_13)
+    )
+  )
+
 lazy val root = project
   .in(file("."))
-  .aggregate(core, cats)
+  .aggregate(core, cats, zio)
