@@ -27,6 +27,17 @@ lazy val cats = project
     )
   )
 
+lazy val scalaz = project
+  .in(file("scalaz"))
+  .dependsOn(core)
+  .settings(commonSettings)
+  .settings(
+    libraryDependencies ++= Seq(
+      ("org.scalaz" %% "scalaz-core" % "7.3.3").cross(CrossVersion.for3Use2_13),
+      ("org.scalaz" %% "scalaz-effect" % "7.3.3").cross(CrossVersion.for3Use2_13),
+    )
+  )
+
 lazy val zio = project
   .in(file("zio"))
   .dependsOn(core)
