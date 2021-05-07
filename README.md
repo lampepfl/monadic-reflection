@@ -3,9 +3,14 @@ Monadic Reflection
 This project provides support for monadic reflection (Filinski [1994](https://dl.acm.org/citation.cfm?id=178047), [1999](https://doi.org/10.1145/292540.292557))
 to integrate monadic code with direct style code.
 
-Dependencies
-------------
-## Runtime
+## Example Integrations
+We provide a few case studies showing how to program with established monadic libraries in direct style:
+
+- [cats](/lampepfl/monadic-reflection/tree/main/cats/src/main/scala/monadic/cats)
+- [zio](/lampepfl/monadic-reflection/tree/main/zio/src/main/scala/monadic)
+- [`Future`](/lampepfl/monadic-reflection/blob/main/core/src/main/scala/monadic/examples.scala)
+
+## Dependencies
 To implement monadic reflection we require some implementation of
 (delimited) continuations. At the moment, our library only runs on
 a open JDK fork called [project loom](http://cr.openjdk.java.net/~rpressler/loom/Loom-Proposal.html) with runtime support for coroutines / delimited continuations.
