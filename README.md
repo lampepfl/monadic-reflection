@@ -64,8 +64,9 @@ The first should look very familiar to you -- and if you already have a monad is
 We provide a few case studies showing how to program with established monadic libraries in direct style:
 
 - [cats](/lampepfl/monadic-reflection/tree/main/cats/src/main/scala/monadic/cats)
-- [zio](/lampepfl/monadic-reflection/tree/main/zio/src/main/scala/monadic)
 - [`Future`](/lampepfl/monadic-reflection/blob/main/core/src/main/scala/monadic/examples.scala)
+- [scalaz](/lampepfl/monadic-reflection/blob/main/scalaz/src/main/scala/monadic/examples.scala)
+- [zio](/lampepfl/monadic-reflection/tree/main/zio/src/main/scala/monadic)
 
 ## Dependencies
 To implement monadic reflection we require some implementation of
