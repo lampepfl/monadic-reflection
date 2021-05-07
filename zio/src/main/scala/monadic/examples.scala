@@ -40,6 +40,12 @@ object MyApp extends zio.App {
   def run(args: List[String]) =
     Zio.reify { loop(); myAppLogic() }.exitCode
 
+  /**
+   * This is the getting started example from:
+   *   https://zio.dev/docs/overview/overview_basic_operations
+   *
+   * translated to direct style.
+   */
   def myAppLogic(): Zio[Has[Console.Service], IOException, Unit] =
     putStrLn("Hello! What is your name?").perform
     val name = getStrLn.perform
