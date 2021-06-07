@@ -139,7 +139,7 @@ import library.*
 /**
  * Service interfaces
  */
-object services extends App {
+object services {
 
   class IOException extends Throwable
 
