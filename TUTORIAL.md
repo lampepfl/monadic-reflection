@@ -46,7 +46,7 @@ def e7 = throw new Exception("Boom")
 def e8 = e3(e6)
 ```
 Printing to (example `e5`) or reading from the console (example `e6`) has effects on the outside world. The same goes for programs that throw exceptions (example `e7`): they do not simply return a value but cause a non-local transfer of the control flow.
-Finally, even though the function `e3` is pure, the composed expression `e8` is impure because evaluating the argument will read from the console. Furthermore, maybe confusingly we say that the expression `val e9 = () => e6` **is pure**. Passing around `e9` doesn't cause any side effects. However, calling `e8()` has the effect of reading from the console and is thus impure.
+Finally, even though the function `e3` is pure, the composed expression `e8` is impure because evaluating the argument will read from the console. Furthermore, maybe confusingly we say that the expression `val e9 = () => e6` **is pure** -- the effects of `e9` are _latent_. Passing around `e9` itself doesn't cause any side effects. However, calling `e8()` reveals the latent effect of reading from the console and is thus impure.
 
 > **State of the World**
 > The term "state of the world" is purposefully vague. It can be interpreted as mutable state, files, the current time, databases, network, the current frames on the stack, and many more.
@@ -62,7 +62,7 @@ scala> e6 + e6
 res: Int = 3
 ```
 
-Another common example for side effect are _exceptions_.
+Another common example for side effects are _exceptions_.
 The following program will serve us as a running example in the remainder of this tutorial.
 
 ```scala
@@ -81,7 +81,7 @@ Calling `raise()` is an impure program, and so is `prog`.
 
 
 ## Monads
-Historically, the concept of monads has been introduced by researchers to describe the meaning of programs that have side effects. It later has been discovered as a program structuring principle that equips programmers with the power to define their own effects. To the current day, in the Scala language, monads are often used in order to separate the description of a program from actually running it. Importantly, this separation allows programmers to reason about programs as values.
+Historically, the concept of monads has been introduced by researchers to describe the meaning of programs that have side effects. It later has been discovered as a program structuring principle that equips programmers with the power to define their own effects. To the current day, in the Scala language, monads are often used in order to separate the description of a program from actually running it. Importantly, this separation allows programmers to reason about _programs as values_.
 
 There [are](https://medium.com/free-code-camp/demystifying-the-monad-in-scala-cc716bb6f534) [many](https://www.baeldung.com/scala/monads) [introductions](https://blog.redelastic.com/a-guide-to-scala-collections-exploring-monads-in-scala-collections-ef810ef3aec3) to monads out there, so here we just want to give a brief glimpse at the concept and establish terminology.
 
@@ -96,7 +96,7 @@ Sometimes those methods have different names (for example `pure` is sometimes ca
 
 One example of such a type is `Option` where the method `pure` is called `Some`.
 A nice (and essential) part about monadic programs is that they can be composed into larger programs.
-That is, if we  (only) know that `M` is a monad, we can use `flatMap` to compose two programs.
+That is, if we (only) know that `M` is a monad, we can use `flatMap` to compose two programs.
 In the following example we concretely use the `Option` monad to express our above running example:
 
 ```scala
@@ -143,7 +143,7 @@ for {
 ```
 
 ## Continuation-Passing Style
-Another programming language concept, related to effects, is _continuation-passing style_ (or "CPS").
+Another programming language concept, related to effects, is _continuation-passing style_ (or short "CPS").
 A program written in CPS has a very special shape: Functions do not return anything, instead they get a function (the _continuation_) as an additional parameter, which they call with the resulting value.
 
 That is, a function like
@@ -183,8 +183,7 @@ def quadruple(x: Int) = {
   return res2
 }
 ```
-This illustrates one historic motivation for CPS: it makes it very clear which function is evaluated exactly when. In the direct style version we can see that _first_ we evaluate `double(x)` and only when this call returns, we _then_ evaluate
-`double(res1)`.
+This illustrates one historic motivation for CPS: it makes it very clear which function is evaluated exactly in which order. In the direct style version, we can see that we _first_ evaluate `double(x)` and only when this call returns, we _then_ evaluate `double(res1)`.
 
 ### Control Effects
 However, there is another aspect to programs in CPS, which is much more important for this tutorial: writing a program in CPS gives us direct access to the continuation `k`. It is just a function like any other and we can call it directly, call it later, not call it, call it multiple times, and so on. You might be familiar with this in the context of webprogramming, where
@@ -222,7 +221,7 @@ run { prog } // prints "Division by zero"
 
 ## CPS as a Monad
 If we compare the running example written in monadic style using `flatMap` and in CPS, we can recognize a similarity.
-In fact, in scala the curried function application `safeDiv(1, 2) { res1 => ... }` is syntactic sugar for the equivalent
+In fact, in Scala the curried function application `safeDiv(1, 2) { res1 => ... }` is syntactic sugar for the equivalent
 `safeDiv(1, 2).apply { res1 => ... }`, showing that the only difference is the name of the function (that is, `flatMap` vs. `apply`). It is thus very easy to turn our `CPS` type into a monad. We simply define an extension method for `flatMap`
 and a function `pure`:
 
@@ -230,11 +229,11 @@ and a function `pure`:
 def pure[A](a: A): CPS[A] = k => k(a)
 
 extension [A](prog: CPS[A])
-  def flatMap[B](f: A => CPS[B]): CPS[B] = k => prog(a => f(a)(k))
+  def flatMap[B](f: A => CPS[B]): CPS[B] = k => prog.apply(a => f(a).apply(k))
   def map[B](f: A => B): CPS[B] = flatMap(a => pure(f(a)))
 ```
 
-Now again, we can also use for-comprehension to write `prog` as:
+Now again, we can also use for-comprehensions to write `prog` as:
 
 ```scala
 def prog: CPS[Int] =
@@ -250,7 +249,7 @@ Since the only difference between `flatMap` and `apply` really is the name, the 
 It is this power, that has earned it the name ["The Mother of all Monads"](https://www.schoolofhaskell.com/school/to-infinity-and-beyond/pick-of-the-week/the-mother-of-all-monads).
 
 ### Option
-We can for instance, very easily re-define:
+We can, for instance, very easily re-define:
 ```scala
 type Res = Option[Int]
 ```

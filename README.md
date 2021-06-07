@@ -4,7 +4,7 @@ _This project provides support for monadic reflection (Filinski [1994](https://d
 to integrate monadic code with direct style code._
 
 ## Tired of writing code using for-comprehensions?
-The `monadic-reflection` provides a convenient alternative! 
+The `monadic-reflection` library provides a convenient alternative!
 
 ### Before
 ```scala
@@ -43,7 +43,7 @@ The best thing is, that you can go back and forth between the two representation
 trait Monadic[M[_]] {
   // embed a monadic value into direct style
   def reflect[R](mr: M[R])(using r: CanReflect[M]): R = r.reflect(mr)
-  
+
   // reveal the monadic structure of a direct-style program
   def reify[R](prog: CanReflect[M] ?=> R): M[R]
 }
@@ -64,7 +64,7 @@ The first should look very familiar to you -- and if you already have a monad is
 We provide a few case studies showing how to program with established monadic libraries in direct style:
 
 - [cats](/lampepfl/monadic-reflection/tree/main/cats/src/main/scala/monadic/cats)
-- [`Future`](/lampepfl/monadic-reflection/blob/main/core/src/main/scala/monadic/examples.scala)
+- [`Future`](/lampepfl/monadic-reflection/blob/main/core/src/main/scala/monadic/examples/FutureIO.scala)
 - [scalaz](/lampepfl/monadic-reflection/blob/main/scalaz/src/main/scala/monadic/examples.scala)
 - [zio](/lampepfl/monadic-reflection/tree/main/zio/src/main/scala/monadic)
 
