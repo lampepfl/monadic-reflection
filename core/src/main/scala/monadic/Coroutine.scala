@@ -1,13 +1,13 @@
 package monadic
 
-import java.lang.{ ContinuationScope, Continuation }
+import jdk.internal.vm.{ ContinuationScope, Continuation }
 
 private[monadic]
 trait Prompt[S, R] {
   def suspend(value: S): R
 }
 
-private[monadic] 
+private[monadic]
 class Coroutine[S, R, T](prog: Prompt[S, R] => T) {
 
   // to disable asserts

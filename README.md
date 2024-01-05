@@ -70,39 +70,15 @@ We provide a few case studies showing how to program with established monadic li
 
 ## Dependencies
 To implement monadic reflection we require some implementation of
-(delimited) continuations. At the moment, our library only runs on
-a open JDK fork called [project loom](http://cr.openjdk.java.net/~rpressler/loom/Loom-Proposal.html) with runtime support for coroutines / delimited continuations.
+(delimited) continuations. At the moment, our library only runs on JDK >= 21 
 
-### Download a Loom-enabled JDK
-There are early-access builds available at <https://jdk.java.net/loom/>.
-
-### Build Loom
-
-To build the custom JVM yourself, clone the repository
-```
-git clone https://github.com/openjdk/loom
-```
-
-and checkout the continuation branch `cont`:
-```
-git checkout fibers
-```
-
-Detailed instructions on how to build the JDK can be found in the
-file `doc/building.md`, in short those are:
-```
-bash configure
-make images
-```
 
 ### Run Sbt
 
-Finally, run sbt with the newly built JVM. Assuming you checked out
-loom into `PATH` and built on a mac, run:
+Finally, since we are accessing jvm internal types (Continuation and ContiuationScope), we need to allow our program to access them.
 ```
-sbt -java-home $PATH/build/macosx-x86_64-server-release/images/jdk
+sbt -J--add-exports=java.base/jdk.internal.vm=ALL-UNNAMED
 ```
-Obviously the path needs to be adjusted for other operating systems.
 
 Some experimental performance optimizations of project loom can be enabled by
 ```

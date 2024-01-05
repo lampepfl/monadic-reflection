@@ -40,12 +40,6 @@ object library {
    */
   given Service[Any] = ()
 
-  extension [R, E, A](eff: EFF[R, E, A])
-    /**
-     * Provide services to the computation, fully satisfying its requirements
-     */
-    def provide(service: R): EFF[Any, E, A] = eff(using service)
-
 
   /**
    * ERRORS
@@ -77,53 +71,60 @@ object library {
   private case class ExceptionWrapper[E](e: E) extends Throwable
 
   /**
-   * Extension methods for error handling
-   */
-  extension [R, E, A](eff: EFF[R, E, A])
-
-    def catchAll[R1 <: R, E1, A1 >: A](handler: E => Eff[R1, E1, A1]): EFF[R1, E1, A1] =
-        try { eff(using use[R1], ()) }
-        catch { case ExceptionWrapper(e) => handler(e.asInstanceOf[E]) }
-
-    def catchSome[R1 <: R, E1 >: E, A1 >: A](handler: PartialFunction[E, Eff[R1, E1, A1]]): EFF[R1, E1, A1] =
-        try { eff(using use[R1], ()) }
-        catch {
-          case ExceptionWrapper(e) if handler.isDefinedAt(e.asInstanceOf[E]) =>
-            handler(e.asInstanceOf[E])
-        }
-
-  /**
    * A helper type to improve effect inference using method `effectful` below.
    *
-   * By using this type alias, values of type `EFF[R, E, A]` are **not** automatically coerced into `A`
+   * By using this type, values of type `EFF[R, E, A]` are **not** automatically coerced into `A`
    * triggering an implicit search.
    *
    * However, since this often is the intended behavior at use site, with the given `autoForce`,
    * we also provide such a coercion.
+   *
+   * Sadly, this cannot be a opaque type alias anymore and requires explicit wrapping and unwrapping now.
    */
-  opaque type EFF[-R, +E, +A] = (Service[R], Error[E]) ?=> A
+  trait EFF[-R, +E, +A] {
+
+    /**
+     * Force reveals the underlying representation of EFF and triggers search for
+     * service and error capabilities.
+     */
+    def force()(using Service[R], Error[E]): A
+
+    /**
+     * Provide services to the computation, fully satisfying its requirements
+     */
+    inline def provide(service: R): EFF[Any, E, A] = effectful { this.force()(using service) }
+
+    inline def catchAll[R1 <: R, E1, A1 >: A](handler: E => Eff[R1, E1, A1]): EFF[R1, E1, A1] = effectful {
+      try { this.force()(using use[R1], ()) }
+      catch { case ExceptionWrapper(e) => handler(e.asInstanceOf[E]) }
+    }
+
+    inline def catchSome[R1 <: R, E1 >: E, A1 >: A](handler: PartialFunction[E, Eff[R1, E1, A1]]): EFF[R1, E1, A1] =
+      effectful {
+        try { this.force()(using use[R1], ()) }
+        catch {
+          case ExceptionWrapper(e) if handler.isDefinedAt(e.asInstanceOf[E]) =>
+            handler(e.asInstanceOf[E])
+        }
+      }
+  }
 
   /**
    * Helper method to mark positions where effects should be inferred.
    *
    *   def foo = effectful { use[A].a() + use[B].b() }
    *
-   * will infer `EFF[A & B, Nothing, T]` as the type for foo. See also extension method `force`
+   * will infer `EFF[A & B, Nothing, T]` as the type for foo. See also method `force`
    * to convert back into `Eff`.
    */
-  def effectful[R, E, A](eff: (Service[R], Error[E]) ?=> A): EFF[R, E, A] = eff
-
-  /**
-   * Force reveals the underlying representation of EFF and triggers search for
-   * service and error capabilities.
-   */
-  extension [R, E, A](eff: EFF[R, E, A])
-    def force(): Eff[R, E, A] = eff
+  inline def effectful[R, E, A](eff: (Service[R], Error[E]) ?=> A): EFF[R, E, A] = new EFF {
+    def force()(using Service[R], Error[E]): A = eff
+  }
 
   /**
    * Just an alias for the extension method EFF.force()
    */
-  def run[R, E, A](eff: EFF[R, E, A]): Eff[R, E, A] = eff
+  inline def run[R, E, A](eff: EFF[R, E, A]): Eff[R, E, A] = eff.force()
 
   /**
    * Since EFF is mostly used at definition sites, at use sites it is most of the time the

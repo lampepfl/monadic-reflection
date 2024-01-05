@@ -1,6 +1,7 @@
+
 lazy val commonSettings = Seq(
     version := "0.1.0-SNAPSHOT",
-    scalaVersion := "3.0.0",
+    scalaVersion := "3.3.1",
     // javaOptions ++= Seq(
     //   "-XX:-DetectLocksInCompiledFrames",
     //   "-XX:+UnlockDiagnosticVMOptions",
@@ -13,7 +14,11 @@ lazy val core = project
   .settings(commonSettings)
   .settings(
     name := "monadic-reflection",
-    description := "Monadic Reflection for Scala"
+    description := "Monadic Reflection for Scala",
+    // enable access of jdk.internal.vm.{ Continuation, ContinuationScope }
+    javaOptions ++= Seq(
+      "--add-exports=java.base/jdk.internal.vm=ALL-UNNAMED"
+    )
   )
 
 lazy val cats = project
