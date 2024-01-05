@@ -7,6 +7,16 @@ lazy val commonSettings = Seq(
     //   "-XX:+UnlockDiagnosticVMOptions",
     //   "-XX:+UnlockExperimentalVMOptions",
     //   "-XX:+UseNewCode")
+) ++ enableContinuations
+
+lazy val enableContinuations = Seq(
+  // forking is necessary in order to enable the access of the internal vm types below.
+  fork := true,
+
+  // enable access of jdk.internal.vm.{ Continuation, ContinuationScope }
+  javaOptions ++= Seq(
+    "--add-exports=java.base/jdk.internal.vm=ALL-UNNAMED"
+  )
 )
 
 lazy val core = project
@@ -14,11 +24,7 @@ lazy val core = project
   .settings(commonSettings)
   .settings(
     name := "monadic-reflection",
-    description := "Monadic Reflection for Scala",
-    // enable access of jdk.internal.vm.{ Continuation, ContinuationScope }
-    javaOptions ++= Seq(
-      "--add-exports=java.base/jdk.internal.vm=ALL-UNNAMED"
-    )
+    description := "Monadic Reflection for Scala"
   )
 
 lazy val cats = project

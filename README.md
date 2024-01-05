@@ -75,7 +75,10 @@ To implement monadic reflection we require some implementation of
 
 ### Run Sbt
 
-Finally, since we are accessing jvm internal types (Continuation and ContiuationScope), we need to allow our program to access them.
+Finally, since we are accessing jvm internal types (Continuation and ContiuationScope),
+we need to allow our program to access them. This is done by forking the process in the `sbt` configuration.
+
+If this does not work for you (for whatever reason), you can try to run `sbt` with:
 ```
 sbt -J--add-exports=java.base/jdk.internal.vm=ALL-UNNAMED
 ```
