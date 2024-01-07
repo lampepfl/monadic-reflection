@@ -1,7 +1,7 @@
 
 lazy val commonSettings = Seq(
     version := "0.1.0-SNAPSHOT",
-    scalaVersion := "3.3.1",
+    scalaVersion := "3.4.0-RC1-bin-20240105-d2cc3ae-NIGHTLY",
     // javaOptions ++= Seq(
     //   "-XX:-DetectLocksInCompiledFrames",
     //   "-XX:+UnlockDiagnosticVMOptions",
