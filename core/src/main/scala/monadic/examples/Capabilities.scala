@@ -92,7 +92,7 @@ object library {
     /**
      * Provide services to the computation, fully satisfying its requirements
      */
-    inline def provide(service: R): EFF[Any, E, A] = effectful { this.force()(using service) }
+    infix inline def provide(service: R): EFF[Any, E, A] = effectful { this.force()(using service) }
 
     inline def catchAll[R1 <: R, E1, A1 >: A](handler: E => Eff[R1, E1, A1]): EFF[R1, E1, A1] = effectful {
       try { this.force()(using use[R1], ()) }

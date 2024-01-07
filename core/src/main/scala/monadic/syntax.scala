@@ -1,12 +1,12 @@
 package monadic
 package syntax
 
-  type in[A, M[_]] = CanReflect[M] ?=> A
+  infix type in[A, M[_]] = CanReflect[M] ?=> A
 
   inline def reify[M[_]: Monadic]: ReifyBuilder[M] = ReifyBuilder()
 
   case class ReifyBuilder[M[_]]()(using M: Monadic[M]) {
-    inline def in[R](prog: R in M) = M.reify[R] { prog }
+    infix inline def in[R](prog: R in M) = M.reify[R] { prog }
     inline def apply[R](prog: R in M) = M.reify[R] { prog }
   }
 
